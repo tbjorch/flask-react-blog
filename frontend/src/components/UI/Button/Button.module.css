@@ -1,0 +1,15 @@
+.button {
+    width: 10em;
+    padding: 1em;
+    margin: 1em;
+    border: 0px;
+    font-size: 0.75em;
+    font-weight: 700;
+    font-family: Arial;
+    color: white;
+    background-color: CadetBlue;   
+}
+
+.button:hover {
+    background-color: rebeccapurple;
+}

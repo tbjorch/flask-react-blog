@@ -1,0 +1,25 @@
+.navbar {
+    margin: 0;
+    padding: 0;
+    height: 4em;
+    display: flex;
+    background: CadetBlue;
+}
+
+.navbarButton {
+    margin: 0;
+    padding: 1.5em;
+    text-decoration: none;
+    font-size: 1em;
+    color: white;
+    border: 0;
+    background: inherit;
+}
+
+.navbarButton:hover {
+    color: rebeccapurple;
+}
+
+.rightButtonGroup {
+    margin-left: auto;
+}
