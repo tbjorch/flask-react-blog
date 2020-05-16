@@ -124,8 +124,8 @@ def test_get_blogpost_correct() -> None:
         db.session.commit()
         res = c.get('/blogposts/1')
         data = res.get_json()
-        assert data["headline"] == "This is my headline"
-        assert data["body"] == "This is a body text"
+        assert data[0]["headline"] == "This is my headline"
+        assert data[0]["body"] == "This is a body text"
         assert res.status_code == 200
 
 

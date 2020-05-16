@@ -42,7 +42,9 @@ class BaseController():
     def ok_response(self) -> Response:
         return make_response(jsonify(message="ok"), 200)
 
-    def make_json_response(self, return_data: Dict) -> Response:
+    def make_json_response(self, return_data: Dict, token=None) -> Response:
         response = make_response(jsonify(return_data), 200)
         response.content_type = "application/json"
+        if token is not None:
+            response.set_cookie("Authorization", token)
         return response

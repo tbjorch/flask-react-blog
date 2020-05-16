@@ -84,7 +84,9 @@ class UserController(BaseController):
         user: User = User.find_by_username(data["username"])
         if user is None:
             raise Unauthorized("User or password is incorrect")
-        self.ac.authenticate(user, data["password"])
+        jwt_token: bytes = self.ac.authenticate(user, data["password"])
         return self.make_json_response(
-            {"message": "User successfully authenticated!"}
-            )
+            {
+                "message": "User successfully authenticated!"
+            }, token=jwt_token
+        )
