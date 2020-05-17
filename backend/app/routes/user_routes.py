@@ -3,9 +3,10 @@ from flask import Response
 
 # Internal modules
 from app import app
-from app.controllers import UserController
+from app.controllers import UserController, AuthController
 
 controller: UserController = UserController()
+auth = AuthController.get_instance()
 
 
 @app.route('/users', methods=['POST'])
@@ -19,6 +20,7 @@ def find_user(id) -> Response:
 
 
 @app.route('/users/<id>', methods=['DELETE'])
+@auth.authorize(["ADMIN"])
 def delete_user(id) -> Response:
     return controller.delete_user(id)
 
@@ -29,6 +31,7 @@ def add_role(id) -> Response:
 
 
 @app.route('/users/<id>/role', methods=['DELETE'])
+@auth.authorize(["ADMIN"])
 def delete_role(id) -> Response:
     return controller.delete_role(id)
 

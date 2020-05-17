@@ -6,6 +6,10 @@ from tests import CustomTestClient
 from app import db
 from app.models import Blogpost, User
 
+from app.controllers import AuthController
+
+auth = AuthController.get_instance()
+
 
 def test_post_blogposts_correct() -> None:
     user = User("jane", "asd123")
@@ -97,11 +101,33 @@ def test_post_blogpost_badrequest_too_few_fields_in_json_request() -> None:
         assert res.status_code == 400
 
 
+def test_delete_blogpost_not_logged_in() -> None:
+    with CustomTestClient() as c:
+        res = c.delete('/blogposts/1')
+        data = res.get_json()
+        assert data["message"] == \
+            "You need to be logged in"
+        assert res.status_code == 401
+
+
+def test_delete_blogpost_unauthorized_role() -> None:
+    with CustomTestClient() as c:
+        token = auth.create_jwt_token("JohnDoe", 1, ["NON_AUTHORIZED_ROLE"])
+        c.set_cookie('localhost:5000', 'Authorization', token)
+        res = c.delete('/blogposts/1')
+        data = res.get_json()
+        assert data["message"] == \
+            "You are not authorized to perform this action"
+        assert res.status_code == 401
+
+
 def test_delete_blogpost_correct() -> None:
     with CustomTestClient() as c:
         blogpost: Blogpost = Blogpost("Headline", "Body", 1)
         db.session.add(blogpost)
         db.session.commit()
+        token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
+        c.set_cookie('localhost:5000', 'Authorization', token)
         res = c.delete('/blogposts/1')
         data = res.get_json()
         assert data["message"] == "Blogpost successfully deleted"
@@ -110,6 +136,8 @@ def test_delete_blogpost_correct() -> None:
 
 def test_delete_blogpost_nonexisting() -> None:
     with CustomTestClient() as c:
+        token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
+        c.set_cookie('localhost:5000', 'Authorization', token)
         res = c.delete('/blogposts/1')
         data = res.get_json()
         assert data["message"] == "No blogpost found with id=1"

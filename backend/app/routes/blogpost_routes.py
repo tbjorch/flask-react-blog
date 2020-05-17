@@ -3,9 +3,10 @@ from flask import Response
 
 # Internal modules
 from app import app
-from app.controllers import BlogpostController
+from app.controllers import BlogpostController, AuthController
 
 controller: BlogpostController = BlogpostController()
+auth = AuthController.get_instance()
 
 
 @app.route('/')
@@ -29,5 +30,6 @@ def find_blogpost(id) -> Response:
 
 
 @app.route('/blogposts/<id>', methods=['DELETE'])
+@auth.authorize(["ADMIN"])
 def delete_blogpost(id) -> Response:
     return controller.delete_blogpost(id)

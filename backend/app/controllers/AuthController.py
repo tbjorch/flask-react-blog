@@ -1,34 +1,67 @@
 # Standard library
 from typing import List, Dict
 from datetime import datetime, timedelta
+from functools import wraps
 
 # 3rd party modules
 from argon2 import PasswordHasher
 from werkzeug.exceptions import Unauthorized
 import jwt
+from flask import request
 
 # Internal modules
-from app.models import User
+# from app.models import User
 
 
 class AuthController:
-    SECRET = "ABC123"
-    ph = PasswordHasher()
+    instance = None
 
-    def authenticate(self, user: User, password: str) -> bytes:
-        pw_verified: bool = self.ph.verify(user.password_hash, password)
-        if pw_verified and self.ph.check_needs_rehash(user.password_hash):
-            user.password_hash = self.ph.hash(password)
-            user.__save__()
+    @staticmethod
+    def get_instance():
+        if AuthController.instance is None:
+            AuthController.instance = AuthController()
+        return AuthController.instance
+
+    def __init__(self):
+        self.SECRET = "ABC123"
+        self.ph = PasswordHasher()
+
+    def authenticate(self, pw_hash: str, password: str) -> Dict:
+        pw_verified: bool = self.ph.verify(pw_hash, password)
+        new_pw_hash = None
+        if pw_verified and self.ph.check_needs_rehash(pw_hash):
+            new_pw_hash = self.ph.hash(password)
         if not pw_verified:
             raise Unauthorized("User or password is incorrect")
-        return self.create_jwt_token(user.id, user.username, user.roles)
+        return {'new_pw_hash': new_pw_hash, 'is_authenticated': True}
 
     def create_pw_hash(self, password: str) -> str:
         return self.ph.hash(password)
 
-    def authorize(user: User, roles: List[str]) -> bool:
-        pass
+    def authorize(self, authorized_roles: List[str]):
+        def decorated_function(function):
+            @wraps(function)
+            def wrapper(*args, **kwargs):
+                self._has_authorized_roles(authorized_roles)
+                return function(*args, **kwargs)
+            return wrapper
+        return decorated_function
+
+    def _has_authorized_roles(self, authorized_roles: List[str]):
+        try:
+            token = request.cookies["Authorization"]
+            user_data = self.decode_jwt_token(token)
+            print(user_data["roles"])
+            print(authorized_roles)
+            for role in authorized_roles:
+                if role in user_data["roles"]:
+                    return
+            raise Unauthorized(
+                        "You are not authorized to perform this action"
+                        )
+        except KeyError as e:
+            print(e)
+            raise Unauthorized("You need to be logged in")
 
     def create_jwt_token(
             self,
@@ -50,6 +83,8 @@ class AuthController:
             print(e)
 
     def decode_jwt_token(self, jwt_token: bytes) -> Dict:
+        if jwt_token is None:
+            raise Unauthorized("You need to be signed in")
         try:
             payload = jwt.decode(jwt_token, self.SECRET, algorithms='HS256')
             return payload['sub']

@@ -9,10 +9,10 @@ from werkzeug.exceptions import BadRequest, NotFound, Unauthorized
 from app.controllers import BaseController, AuthController
 from app.models import User, Role
 
+auth = AuthController.get_instance()
+
 
 class UserController(BaseController):
-
-    ac: AuthController = AuthController()
 
     def create_user(self) -> Response:
         data: Dict = self.get_required_data_from_request(
@@ -22,7 +22,7 @@ class UserController(BaseController):
             raise BadRequest("Username is already taken")
         new_user: User = User(
             data["username"],
-            self.ac.create_pw_hash(data["password"]))
+            auth.create_pw_hash(data["password"]))
         new_user.save()
         return self.make_json_response(
             dict(message="User successfully created")
@@ -84,9 +84,18 @@ class UserController(BaseController):
         user: User = User.find_by_username(data["username"])
         if user is None:
             raise Unauthorized("User or password is incorrect")
-        jwt_token: bytes = self.ac.authenticate(user, data["password"])
-        return self.make_json_response(
-            {
-                "message": "User successfully authenticated!"
-            }, token=jwt_token
-        )
+        auth_dict = auth.authenticate(user.password_hash, data["password"])
+        if auth_dict["is_authenticated"]:
+            if auth_dict["new_pw_hash"] is not None:
+                user.password_hash = auth_dict["new_pw_hash"]
+                user.save()
+            jwt_token: bytes = auth.create_jwt_token(
+                user.id,
+                user.username,
+                [role.name for role in user.roles]
+            )
+            return self.make_json_response(
+                {
+                    "message": "User successfully authenticated!"
+                }, token=jwt_token
+            )

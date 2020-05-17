@@ -7,6 +7,7 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.exceptions import HTTPException
 
+
 app = Flask(__name__)
 CORS(app)
 

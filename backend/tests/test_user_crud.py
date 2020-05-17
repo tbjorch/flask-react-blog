@@ -4,7 +4,10 @@ import json
 # internal modules
 from tests import CustomTestClient
 from app.models import User, Role
+from app.controllers import AuthController
 from app import db
+
+auth = AuthController.get_instance()
 
 
 def test_post_user_already_exists() -> None:
@@ -65,6 +68,8 @@ def test_get_user_by_id_nonexisting_user_and_bad_id() -> None:
 def test_delete_user_correct() -> None:
     user: User = User("hauck", "asd123")
     with CustomTestClient() as c:
+        token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
+        c.set_cookie('localhost:5000', 'Authorization', token)
         db.session.add(user)
         db.session.commit()
         res = c.delete('/users/1')
@@ -75,6 +80,8 @@ def test_delete_user_correct() -> None:
 
 def test_delete_user_non_existing() -> None:
     with CustomTestClient() as c:
+        token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
+        c.set_cookie('localhost:5000', 'Authorization', token)
         res = c.delete('/users/1')
         assert res.status_code == 404
         data = res.get_json()
@@ -83,6 +90,8 @@ def test_delete_user_non_existing() -> None:
 
 def test_delete_user_non_existing_and_bad_id() -> None:
     with CustomTestClient() as c:
+        token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
+        c.set_cookie('localhost:5000', 'Authorization', token)
         res = c.delete('/users/1')
         assert res.status_code == 404
         data = res.get_json()
@@ -168,14 +177,43 @@ def test_post_user_role_nonexisting_user() -> None:
         assert res.status_code == 404
 
 
-def test_delete_user_role_nonexisting_user() -> None:
-    role_1 = Role("ADMIN", "Administrator for site")
+def test_delete_user_role_not_authorized_not_logged_in() -> None:
     with CustomTestClient() as c:
+        res = c.delete(
+            '/users/1/role',
+            data=json.dumps({'role': 'ADMIN'}),
+            content_type='application/json'
+        )
+        data = res.get_json()
+        assert data["message"] == "You need to be logged in"
+        assert res.status_code == 401
+
+
+def test_delete_user_role_not_authorized_role() -> None:
+    with CustomTestClient() as c:
+        token = auth.create_jwt_token("JohnDoe", 1, ["UNAUTHORIZED_ROLE"])
+        c.set_cookie('localhost:5000', 'Authorization', token)
+        res = c.delete(
+            '/users/1/role',
+            data=json.dumps({'role': 'ADMIN'}),
+            content_type='application/json'
+        )
+        data = res.get_json()
+        assert data["message"] == \
+            "You are not authorized to perform this action"
+        assert res.status_code == 401
+
+
+def test_delete_user_role_nonexisting_user() -> None:
+    role_1 = Role("USER", "User on site")
+    with CustomTestClient() as c:
+        token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
+        c.set_cookie('localhost:5000', 'Authorization', token)
         db.session.add(role_1)
         db.session.commit()
         res = c.delete(
             '/users/1/role',
-            data=json.dumps({'role': 'ADMIN'}),
+            data=json.dumps({'role': 'USER'}),
             content_type='application/json'
         )
         data = res.get_json()
@@ -186,6 +224,8 @@ def test_delete_user_role_nonexisting_user() -> None:
 def test_delete_user_role_nonexisting_role() -> None:
     user1 = User("jane", "asd123")
     with CustomTestClient() as c:
+        token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
+        c.set_cookie('localhost:5000', 'Authorization', token)
         db.session.add(user1)
         db.session.commit()
         res = c.delete(
@@ -203,6 +243,8 @@ def test_delete_user_role_correct() -> None:
     user1 = User("jane", "asd123")
     user1.roles.append(role_1)
     with CustomTestClient() as c:
+        token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
+        c.set_cookie('localhost:5000', 'Authorization', token)
         db.session.add(role_1)
         db.session.add(user1)
         db.session.commit()
