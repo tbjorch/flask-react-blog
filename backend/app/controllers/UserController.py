@@ -83,7 +83,7 @@ class UserController(BaseController):
             self.get_required_data_from_request("username", "password")
         user: User = User.find_by_username(data["username"])
         if user is None:
-            raise Unauthorized("User or password is incorrect")
+            raise Unauthorized("Username or password is incorrect")
         auth_dict = auth.authenticate(user.password_hash, data["password"])
         if auth_dict["is_authenticated"]:
             if auth_dict["new_pw_hash"] is not None:

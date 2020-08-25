@@ -48,20 +48,25 @@ class AuthController:
         return decorated_function
 
     def _has_authorized_roles(self, authorized_roles: List[str]):
+        # Check that auth cookie exist in request
         try:
-            token = request.cookies["Authorization"]
-            user_data = self.decode_jwt_token(token)
-            print(user_data["roles"])
-            print(authorized_roles)
+            token = request.cookies.get("Authorization")
+        except KeyError:
+            raise Unauthorized("You need to be logged in")
+        # Try to decode cookie to ensure user is authenticated
+        user_data = self.decode_jwt_token(token)
+        if (len(authorized_roles) == 0):
+            return
+        try:
             for role in authorized_roles:
                 if role in user_data["roles"]:
                     return
             raise Unauthorized(
                         "You are not authorized to perform this action"
                         )
-        except KeyError as e:
-            print(e)
-            raise Unauthorized("You need to be logged in")
+        except KeyError:
+            raise Unauthorized(
+                "You don't have permission to perform this action")
 
     def create_jwt_token(
             self,

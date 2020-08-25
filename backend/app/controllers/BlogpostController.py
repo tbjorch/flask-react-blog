@@ -8,15 +8,13 @@ from werkzeug.exceptions import NotFound
 # Internal modules
 from app.controllers.BaseController import BaseController
 from app.models import Blogpost
-from app.models import User
 
 
 class BlogpostController(BaseController):
 
-    def create_blogpost(self) -> Response:
+    def create_blogpost(self, id) -> Response:
         data: Dict = self.get_required_data_from_request("headline", "body")
-        user = User.find_by_id(1)
-        post: Blogpost = Blogpost(data["headline"], data["body"], user.id)
+        post: Blogpost = Blogpost(data["headline"], data["body"], id)
         post.save()
         return self.make_json_response(
             dict(message="Blogpost successfully created")

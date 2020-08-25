@@ -4,6 +4,3 @@ from app.models.User import User
 from app.models.Role import Role
 
 db.create_all()
-
-admin: Role = Role("ADMIN", "Administrator for the site")
-admin.save()

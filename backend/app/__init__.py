@@ -9,13 +9,14 @@ from werkzeug.exceptions import HTTPException
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
+from app import startup
 from app import routes  # must be imported after app instantiation
 
 

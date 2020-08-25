@@ -20,8 +20,11 @@ def test_post_blogposts_correct() -> None:
             "headline": "This is my headline",
             "body": "This is my body"
             }
+        user = User.find_by_username("jane")
+        token = auth.create_jwt_token(user.id, user.username, ["ADMIN"])
+        c.set_cookie('localhost:5000', 'Authorization', token)
         res = c.post(
-            '/blogposts',
+            '/api/v1/blogposts',
             data=json.dumps(blogpost),
             content_type="application/json"
             )
@@ -33,14 +36,14 @@ def test_post_blogposts_correct() -> None:
             "body": "This is my second body text different from the first!"
             }
         res_2 = c.post(
-            '/blogposts',
+            '/api/v1/blogposts',
             data=json.dumps(blogpost_2),
             content_type="application/json"
             )
         data_2 = res_2.get_json()
         assert data_2["message"] == "Blogpost successfully created"
         assert res_2.status_code == 200
-        user = User.find_by_username("jane")
+        user = User.find_by_id(2)
         assert user.blogposts is not None
         assert user.blogposts[0].headline == "This is my headline"
         assert user.blogposts[0].body == "This is my body"
@@ -49,17 +52,19 @@ def test_post_blogposts_correct() -> None:
             "This is my second body text different from the first!"
         blogpost_1 = Blogpost.find_by_id(1)
         blogpost_2 = Blogpost.find_by_id(2)
-        assert blogpost_1.author_id == blogpost_2.author_id == 1
+        assert blogpost_1.author_id == blogpost_2.author_id == user.id
 
 
 def test_post_blogpost_badrequest_content_type_not_json() -> None:
     with CustomTestClient() as c:
+        token = auth.create_jwt_token(2, "jane", ["ADMIN"])
+        c.set_cookie('localhost:5000', 'Authorization', token)
         blogpost = {
             "headline": "This is my headline",
             "body": "This is my body"
             }
         res = c.post(
-            '/blogposts',
+            '/api/v1/blogposts',
             data=json.dumps(blogpost)
             )
         data = res.get_json()
@@ -70,12 +75,14 @@ def test_post_blogpost_badrequest_content_type_not_json() -> None:
 
 def test_post_blogpost_badrequest_missing_headline_field() -> None:
     with CustomTestClient() as c:
+        token = auth.create_jwt_token(2, "jane", ["ADMIN"])
+        c.set_cookie('localhost:5000', 'Authorization', token)
         blogpost = {
             "something": "Hello",
             "body": "This is my body"
             }
         res = c.post(
-            '/blogposts',
+            '/api/v1/blogposts',
             data=json.dumps(blogpost),
             content_type="application/json"
             )
@@ -87,11 +94,13 @@ def test_post_blogpost_badrequest_missing_headline_field() -> None:
 
 def test_post_blogpost_badrequest_too_few_fields_in_json_request() -> None:
     with CustomTestClient() as c:
+        token = auth.create_jwt_token(2, "jane", ["ADMIN"])
+        c.set_cookie('localhost:5000', 'Authorization', token)
         blogpost = {
             "body": "This is my body"
             }
         res = c.post(
-            '/blogposts',
+            '/api/v1/blogposts',
             data=json.dumps(blogpost),
             content_type="application/json"
             )
@@ -103,18 +112,18 @@ def test_post_blogpost_badrequest_too_few_fields_in_json_request() -> None:
 
 def test_delete_blogpost_not_logged_in() -> None:
     with CustomTestClient() as c:
-        res = c.delete('/blogposts/1')
+        res = c.delete('/api/v1/blogposts/1')
         data = res.get_json()
         assert data["message"] == \
-            "You need to be logged in"
+            "You need to be signed in"
         assert res.status_code == 401
 
 
 def test_delete_blogpost_unauthorized_role() -> None:
     with CustomTestClient() as c:
-        token = auth.create_jwt_token("JohnDoe", 1, ["NON_AUTHORIZED_ROLE"])
+        token = auth.create_jwt_token(1, "JohnDoe", ["NON_AUTHORIZED_ROLE"])
         c.set_cookie('localhost:5000', 'Authorization', token)
-        res = c.delete('/blogposts/1')
+        res = c.delete('/api/v1/blogposts/1')
         data = res.get_json()
         assert data["message"] == \
             "You are not authorized to perform this action"
@@ -126,9 +135,9 @@ def test_delete_blogpost_correct() -> None:
         blogpost: Blogpost = Blogpost("Headline", "Body", 1)
         db.session.add(blogpost)
         db.session.commit()
-        token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
+        token = auth.create_jwt_token(1, "JohnDoe", ["ADMIN"])
         c.set_cookie('localhost:5000', 'Authorization', token)
-        res = c.delete('/blogposts/1')
+        res = c.delete('/api/v1/blogposts/1')
         data = res.get_json()
         assert data["message"] == "Blogpost successfully deleted"
         assert res.status_code == 200
@@ -138,7 +147,7 @@ def test_delete_blogpost_nonexisting() -> None:
     with CustomTestClient() as c:
         token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
         c.set_cookie('localhost:5000', 'Authorization', token)
-        res = c.delete('/blogposts/1')
+        res = c.delete('/api/v1/blogposts/1')
         data = res.get_json()
         assert data["message"] == "No blogpost found with id=1"
         assert res.status_code == 404
@@ -150,7 +159,7 @@ def test_get_blogpost_correct() -> None:
             Blogpost("This is my headline", "This is a body text", 1)
         db.session.add(blogpost)
         db.session.commit()
-        res = c.get('/blogposts/1')
+        res = c.get('/api/v1/blogposts/1')
         data = res.get_json()
         assert data[0]["headline"] == "This is my headline"
         assert data[0]["body"] == "This is a body text"
@@ -159,7 +168,7 @@ def test_get_blogpost_correct() -> None:
 
 def test_get_blogpost_nonexisting() -> None:
     with CustomTestClient() as c:
-        res = c.get('/blogposts/1')
+        res = c.get('/api/v1/blogposts/1')
         data = res.get_json()
         assert data["message"] == "No blogpost found with id=1"
         assert res.status_code == 404

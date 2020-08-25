@@ -46,5 +46,8 @@ class BaseController():
         response = make_response(jsonify(return_data), 200)
         response.content_type = "application/json"
         if token is not None:
-            response.set_cookie("Authorization", token)
+            response.set_cookie(
+                "Authorization",
+                token,
+                domain="127.0.0.1:8080")
         return response

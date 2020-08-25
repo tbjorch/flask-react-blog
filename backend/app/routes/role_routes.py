@@ -3,27 +3,32 @@ from flask import Response
 
 # Internal modules
 from app import app
-from app.controllers import RoleController
+from app.controllers import RoleController, AuthController
 
 
 controller = RoleController()
+auth = AuthController.get_instance()
 
 
-@app.route("/roles", methods=["POST"])
+@app.route("/api/v1/roles", methods=["POST"])
+@auth.authorize(["ADMIN"])
 def create_role() -> Response:
     return controller.create_role()
 
 
-@app.route("/roles/<id>", methods=["GET"])
+@app.route("/api/v1/roles/<id>", methods=["GET"])
+@auth.authorize(["ADMIN"])
 def find_role_by_id(id: int) -> Response:
     return controller.find_role_by_id(id)
 
 
-@app.route("/roles", methods=["GET"])
+@app.route("/api/v1/roles", methods=["GET"])
+@auth.authorize(["ADMIN"])
 def find_role_by_name() -> Response:
     return controller.find_role_by_name()
 
 
-@app.route("/roles/<id>", methods=["DELETE"])
+@app.route("/api/v1/roles/<id>", methods=["DELETE"])
+@auth.authorize(["ADMIN"])
 def delete_role_by_id(id: int) -> Response:
     return controller.delete_role(id)
