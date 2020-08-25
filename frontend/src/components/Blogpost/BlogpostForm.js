@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import Button from '../UI/Button/Button';
 import axios from 'axios';
 
+axios.defaults.withCredentials = true;
+
 const BlogpostForm = (props) => {
     const [blogpost, setBlogpost] = useState({'headline':"", 'body':""});
 
@@ -18,9 +20,10 @@ const BlogpostForm = (props) => {
     }
 
     const create = (blogpost) => {
-        axios.post("http://localhost:5000/blogposts", blogpost, {
+        axios.post("http://127.0.0.1:8080/api/v1/blogposts", blogpost, {
+            withCredentials: true,
             headers: {
-                "Content-Type": 'application/json',
+                "Content-Type": 'application/json'
             }
         }).then(response => {
             props.create(blogpost);

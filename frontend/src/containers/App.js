@@ -4,9 +4,12 @@ import './App.css';
 import Blogposts from '../components/Blogpost/Blogposts';
 import BlogpostForm from '../components/Blogpost/BlogpostForm';
 import LoginForm from '../components/Login/LoginForm';
+import RegisterForm from '../components/Register/RegisterForm';
+import Profile from '../components/Profile/Profile';
 import NavBar from '../components/NavBar/NavBar';
 import styled from "styled-components";
 import axios from 'axios';
+import UserContainer from './UserContainer';
 
 const MainContainer = styled.div`
     width: 85%;
@@ -22,20 +25,21 @@ function App() {
 
   const [blogposts, setBlogposts] = useState([]);
   const [showLogin, setShowLogin] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
 
   useEffect(() => {
     if(blogposts.length === 0){
-      axios.get("http://localhost:5000/blogposts").then(response => {
+      axios.get("http://127.0.0.1:8080/api/v1/blogposts").then(response => {
         setBlogposts(response.data);
       })
     }
   })
 
-  const [activeLink, setActivelink] = useState("/add-blogpost");
+  const [activeLink, setActivelink] = useState("/users");
   const [credentials, setCredentials] = useState(false);
 
   const deleteBlogpost = (postId) => {
-    axios.delete("http://localhost:5000/blogposts/"+postId).then(response => {
+    axios.delete("http://127.0.0.1:8080/api/v1/blogposts/"+postId).then(response => {
       const arrayIndex = blogposts.findIndex(post => post.id==postId);
       const updatedBlogposts = [...blogposts];
       updatedBlogposts.splice(arrayIndex, 1);
@@ -52,7 +56,6 @@ function App() {
 
   const onLinkClick = (linkValue) => {
     const newLink = linkValue;
-    console.log(newLink);
     setActivelink(newLink);
   }
 
@@ -63,7 +66,7 @@ function App() {
   }
 
   const loginHandler = (credentials) => {
-    axios.post("http://localhost:5000/login", credentials, {
+    axios.post("http://127.0.0.1:8080/api/v1/login", credentials, {
       headers: {
         "Content-Type": "application/json"
       }
@@ -77,6 +80,23 @@ function App() {
     })
   }
 
+  const logoutHandler = () => {
+    setCredentials(false);
+    onLinkClick("/");
+  }
+
+  const registerHandler = (credentials) => {
+    axios.post("http://127.0.0.1:8080/api/v1/users", credentials, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }).then(response => {
+      alert(response.data.message);
+      setShowRegister(false);
+      onLinkClick("/");
+    })
+  }
+
   const Content = () => {
     if (activeLink === "/" || activeLink === "/blog") {
       return (
@@ -86,18 +106,25 @@ function App() {
       );
     } else if (activeLink === "/add-blogpost") {
       return <BlogpostForm create={onAddBlogpost} />
+    } else if (activeLink === "/profile") {
+      return <Profile />
     } else if (activeLink === "/login") {
-      return null
+      return null;
+    } else if (activeLink === "/register") {
+      return null;
+    } else if (activeLink === "/users") {
+      return <UserContainer/>
     }
   }
 
   return (
     <div className="App">
-      <NavBar loggedIn={credentials} active={onLinkClick} login={() => setShowLogin(true)} logout={() => loginHandler(false)}/>
+      <NavBar loggedIn={credentials} active={onLinkClick} register={() => setShowRegister(true)} login={() => setShowLogin(true)} logout={() => logoutHandler()}/>
       <MainContainer>
         <Content/>
       </MainContainer>
       {showLogin ? <LoginForm login={loginHandler} show={() => setShowLogin()} /> : null }
+      {showRegister ? <RegisterForm register={registerHandler} show={() => setShowRegister()} /> : null }
     </div>
   );
 }

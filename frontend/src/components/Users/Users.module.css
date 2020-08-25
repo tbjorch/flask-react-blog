@@ -1,0 +1,16 @@
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.td {
+    padding: 0.25em 1em 0.25em 1em;
+}
+
+.tr {
+    height: 2em;
+    width: 100%;
+    margin-bottom: 100px;
+    background-color: #bbb;
+}
