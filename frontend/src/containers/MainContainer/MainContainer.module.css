@@ -1,0 +1,15 @@
+@media only screen and (max-width: 900px) {
+    .main{
+        width: 95%;
+    }
+}
+
+@media (min-width: 900px) {
+    .main{
+        width: 70%;
+    }
+}
+
+.main{
+    margin: auto;
+}

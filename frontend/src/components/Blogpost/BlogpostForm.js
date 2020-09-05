@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Button from '../UI/Button/Button';
 import axios from 'axios';
+import Card from '../UI/Card/Card';
 
 axios.defaults.withCredentials = true;
 
@@ -27,20 +28,23 @@ const BlogpostForm = (props) => {
             }
         }).then(response => {
             props.create(blogpost);
-            alert(response.data.message);
+            setBlogpost({headline: "", body: ""});
+            console.log(response.data.message);
         })
     }
 
-    return (
+    const content = (
         <div>
             <form>
                 <h1>Add Blogpost Form</h1>
-                <input value={blogpost.title} onChange={event => titleChangeHandler(event)} placeholder="Blogpost Title" type="text"/>
+                <input value={blogpost.headline} onChange={event => titleChangeHandler(event)} placeholder="Blogpost Title" type="text"/>
                 <textarea value={blogpost.body} onChange={event => bodyChangeHandler(event)} placeholder="Blogpost body text"/>
             </form>
             <Button onClick={() => create(blogpost)} title="PUBLISH" />
         </div>
-    );
+    )
+
+    return <Card content={content}/>
 }
 
 export default BlogpostForm;

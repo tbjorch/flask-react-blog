@@ -1,0 +1,18 @@
+
+.small{
+    font-size: 15px;
+    width: 20em;
+    text-align: left;
+    margin-left: 1.5em;
+}
+
+.smallLabel{
+    display: inline-block;
+    width: 10em;
+    font-size: 15px;
+    text-align: right;
+}
+
+h2 {
+    margin: 0;
+}

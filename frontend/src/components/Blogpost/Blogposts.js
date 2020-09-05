@@ -9,6 +9,8 @@ const Blogposts = (props) => {
             key={blogpost.id}
             title={blogpost.headline}
             body={blogpost.body}
+            created={blogpost.created_at}
+            author={blogpost.author_id}
             deletePost={() => props.delete(blogpost.id)}
             />
     });

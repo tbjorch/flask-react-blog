@@ -7,14 +7,13 @@ const NavBar = (props) => {
         navBar = (
             <div className={classes.navbar}>
                 <span>
-                    <button className={classes.navbarButton} key={1} onClick={() => props.active("/")} >AMAZING LOGO</button>
+                    <button className={classes.navbarButton} key={1} onClick={() => props.active("/")} >BLOG</button>
                 </span>
                 <span className={classes.rightButtonGroup}  >
                     <button className={classes.navbarButton} key={2} onClick={() => props.active("/blog")} >Blog</button>
                     <button className={classes.navbarButton} key={3} onClick={() => props.active("/add-blogpost")} >Add blogpost</button>  
-                    <button className={classes.navbarButton} key={4} onClick={() => props.active("/profile")} >Profile</button>  
-                    <button className={classes.navbarButton} key={5} onClick={() => props.active("/users")} >Users</button>  
-                    <button className={classes.navbarButton} key={6} onClick={() => props.logout()}>Logout</button>
+                    <button className={classes.navbarButton} key={4} onClick={() => props.active("/users")} >Users</button>  
+                    <button className={classes.navbarButton} key={5} onClick={() => props.logout()}>Logout</button>
                 </span>
             </div>
         );
@@ -22,12 +21,12 @@ const NavBar = (props) => {
         navBar = (
             <div className={classes.navbar}>
                 <span>
-                    <button className={classes.navbarButton} key={1} onClick={() => props.active("/")} >AMAZING LOGO</button>
+                    <button className={classes.navbarButton} key={1} onClick={() => props.active("/")} >BLOG</button>
                 </span>
                 <span className={classes.rightButtonGroup}>
                     <button className={classes.navbarButton} key={2} onClick={() => props.active("/blog")} >Blog</button>
-                    <button className={classes.navbarButton} onClick={() => {props.login(true); props.active("/login")}}>Login</button>
-                    <button className={classes.navbarButton} onClick={() => {props.register(true); props.active("/register")}}>Register</button>
+                    <button className={classes.navbarButton} onClick={() => {props.login(true)}}>Login</button>
+                    <button className={classes.navbarButton} onClick={() => {props.register(true)}}>Register</button>
                 </span>
             </div>
         );

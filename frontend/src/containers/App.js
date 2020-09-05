@@ -10,11 +10,7 @@ import NavBar from '../components/NavBar/NavBar';
 import styled from "styled-components";
 import axios from 'axios';
 import UserContainer from './UserContainer';
-
-const MainContainer = styled.div`
-    width: 85%;
-    margin: auto;
-`
+import MainContainer from './MainContainer/MainContainer';
 
 const BlogpostContainer = styled.div`
     display: flex;
@@ -24,6 +20,7 @@ const BlogpostContainer = styled.div`
 function App() {
 
   const [blogposts, setBlogposts] = useState([]);
+  const [users] = useState([]);
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
 
@@ -33,9 +30,22 @@ function App() {
         setBlogposts(response.data);
       })
     }
+    
+    const cookies = document.cookie.split("; ");
+    let cookieMap = {}
+    for (let i in cookies) {
+      let cookie = cookies[i].split("=");
+      if ( cookie[0] == "Authorization") {
+        setCredentials(true);
+        setShowLogin(false);
+        setShowRegister(false);
+      }
+      cookieMap[cookie[0]] = cookie[1];
+    }
+    console.log(cookieMap)
   })
 
-  const [activeLink, setActivelink] = useState("/users");
+  const [activeLink, setActivelink] = useState("/");
   const [credentials, setCredentials] = useState(false);
 
   const deleteBlogpost = (postId) => {
@@ -46,12 +56,6 @@ function App() {
       setBlogposts(updatedBlogposts);
     }
     )
-  }
-
-  const duplicateBlogpost = (index) => {
-    const posts = [...blogposts];
-    posts.push(blogposts[index]);
-    setBlogposts(posts);
   }
 
   const onLinkClick = (linkValue) => {
@@ -72,7 +76,7 @@ function App() {
       }
     }).then(response => {
         setCredentials(true);
-        alert(response.data.message);
+        console.log(response.data.message);
         setShowLogin(false);
         onLinkClick("/");
     }).catch(error => {
@@ -81,50 +85,35 @@ function App() {
   }
 
   const logoutHandler = () => {
+    document.cookie = "Authorization"+'=; Max-Age=-99999999;';
     setCredentials(false);
     onLinkClick("/");
   }
 
-  const registerHandler = (credentials) => {
-    axios.post("http://127.0.0.1:8080/api/v1/users", credentials, {
-      headers: {
-        "Content-Type": "application/json"
-      }
-    }).then(response => {
-      alert(response.data.message);
-      setShowRegister(false);
-      onLinkClick("/");
-    })
-  }
-
-  const Content = () => {
+  const content = () => {
     if (activeLink === "/" || activeLink === "/blog") {
       return (
         <BlogpostContainer>
-          <Blogposts isLoggedIn={credentials} blogposts={blogposts} delete={deleteBlogpost} duplicate={duplicateBlogpost}/>
+          <Blogposts isLoggedIn={credentials} blogposts={blogposts} delete={deleteBlogpost}/>
         </BlogpostContainer>
       );
     } else if (activeLink === "/add-blogpost") {
       return <BlogpostForm create={onAddBlogpost} />
-    } else if (activeLink === "/profile") {
-      return <Profile />
     } else if (activeLink === "/login") {
       return null;
     } else if (activeLink === "/register") {
       return null;
     } else if (activeLink === "/users") {
-      return <UserContainer/>
+      return <UserContainer users={users}/>
     }
   }
 
   return (
     <div className="App">
       <NavBar loggedIn={credentials} active={onLinkClick} register={() => setShowRegister(true)} login={() => setShowLogin(true)} logout={() => logoutHandler()}/>
-      <MainContainer>
-        <Content/>
-      </MainContainer>
+      <MainContainer content={content()} />
       {showLogin ? <LoginForm login={loginHandler} show={() => setShowLogin()} /> : null }
-      {showRegister ? <RegisterForm register={registerHandler} show={() => setShowRegister()} /> : null }
+      {showRegister ? <RegisterForm redirect={onLinkClick} show={() => setShowRegister()} /> : null }
     </div>
   );
 }
