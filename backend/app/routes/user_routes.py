@@ -19,7 +19,13 @@ def find_user(id) -> Response:
     return controller.find_by_id(id)
 
 
-@app.route('/api/v1//users/<id>', methods=['DELETE'])
+@app.route('/api/v1/users', methods=['GET'])
+@auth.authorize(["ADMIN"])
+def find_all_users() -> Response:
+    return controller.get_all()
+
+
+@app.route('/api/v1/users/<id>', methods=['DELETE'])
 @auth.authorize(["ADMIN"])
 def delete_user(id) -> Response:
     return controller.delete_user(id)

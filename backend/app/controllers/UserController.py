@@ -1,5 +1,5 @@
 # Standard library
-from typing import Dict
+from typing import Dict, List
 
 # 3rd party modules
 from flask import Response
@@ -55,6 +55,13 @@ class UserController(BaseController):
         return self.make_json_response(
             dict(message="Role successfully deleted from user")
         )
+
+    def get_all(self) -> Response:
+        users: List[User] = User.find_all()
+        if users is None:
+            raise NotFound("No users exist")
+        user_json_list = [user.to_dict() for user in users]
+        return self.make_json_response(user_json_list)
 
     def find_by_id(self, id) -> Response:
         user: User = User.find_by_id(id)
