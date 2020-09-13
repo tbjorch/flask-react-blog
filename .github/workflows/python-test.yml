@@ -1,7 +1,7 @@
 name: Python test pipeline
 
 on:
-  push:
+  workflow_dispatch:
     paths:
       - 'backend/*'
 
