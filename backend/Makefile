@@ -3,3 +3,6 @@ test:
 
 rl:
 	sh shellscripts/run-local.sh
+
+run:
+	sh shellscripts/run.sh
