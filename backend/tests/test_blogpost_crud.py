@@ -21,6 +21,7 @@ def test_post_blogposts_correct() -> None:
             "body": "This is my body"
             }
         user = User.find_by_username("jane")
+        uid: int = user.id
         token = auth.create_jwt_token(user.id, user.username, ["ADMIN"])
         c.set_cookie('localhost:5000', 'Authorization', token)
         res = c.post(
@@ -43,16 +44,17 @@ def test_post_blogposts_correct() -> None:
         data_2 = res_2.get_json()
         assert data_2["message"] == "Blogpost successfully created"
         assert res_2.status_code == 200
-        user = User.find_by_id(2)
+        user = User.find_by_id(uid)
         assert user.blogposts is not None
         assert user.blogposts[0].headline == "This is my headline"
         assert user.blogposts[0].body == "This is my body"
         assert user.blogposts[1].headline == "This is my other headline"
         assert user.blogposts[1].body == \
             "This is my second body text different from the first!"
-        blogpost_1 = Blogpost.find_by_id(1)
-        blogpost_2 = Blogpost.find_by_id(2)
-        assert blogpost_1.author_id == blogpost_2.author_id == user.id
+        blogpost_1 = Blogpost.find_by_id(user.blogposts[0].id)
+        blogpost_2 = Blogpost.find_by_id(user.blogposts[1].id)
+        assert blogpost_1.author_id == uid
+        assert blogpost_2.author_id == uid
 
 
 def test_post_blogpost_badrequest_content_type_not_json() -> None:
