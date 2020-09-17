@@ -4,8 +4,7 @@ import json
 # Internal modules
 from tests import CustomTestClient
 from app.models import Role
-from app.controllers import AuthController
-from app import db
+from app.controllers.AuthController import AuthController
 
 auth = AuthController.get_instance()
 
@@ -32,12 +31,10 @@ def test_post_role_correct() -> None:
 
 
 def test_post_role_already_exists() -> None:
-    role: Role = Role("ADMIN", "Administrator role for the site")
     with CustomTestClient() as c:
+        Role("ADMIN", "Administrator role for the site").save()
         token = auth.create_jwt_token("jane", 1, ["ADMIN"])
         c.set_cookie('localhost:5000', 'Authorization', token)
-        db.session.add(role)
-        db.session.commit()
         role = dict(
             name="ADMIN",
             description="Administrator role for the site"
@@ -90,12 +87,10 @@ def test_post_role_badrequest_not_json() -> None:
 
 
 def test_get_role_by_id_correct() -> None:
-    role: Role = Role("ADMIN", "Administrator role for the site")
     with CustomTestClient() as c:
+        Role("ADMIN", "Administrator role for the site").save()
         token = auth.create_jwt_token("jane", 1, ["ADMIN"])
         c.set_cookie('localhost:5000', 'Authorization', token)
-        db.session.add(role)
-        db.session.commit()
         res = c.get('/api/v1/roles/1')
         assert res.status_code == 200
         data = res.get_json()
@@ -114,12 +109,10 @@ def test_get_role_by_id_nonexisting() -> None:
 
 
 def test_get_role_by_name_correct() -> None:
-    role: Role = Role("ADMIN", "Administrator role for the site")
     with CustomTestClient() as c:
+        Role("ADMIN", "Administrator role for the site").save()
         token = auth.create_jwt_token("jane", 1, ["ADMIN"])
         c.set_cookie('localhost:5000', 'Authorization', token)
-        db.session.add(role)
-        db.session.commit()
         res = c.get('/api/v1/roles?name=ADMIN')
         assert res.status_code == 200
         data = res.get_json()
@@ -138,12 +131,10 @@ def test_get_role_by_name_nonexisting() -> None:
 
 
 def test_delete_role_correct() -> None:
-    role: Role = Role("ADMIN", "Administrator role for the site")
     with CustomTestClient() as c:
+        Role("ADMIN", "Administrator role for the site").save()
         token = auth.create_jwt_token("jane", 1, ["ADMIN"])
         c.set_cookie('localhost:5000', 'Authorization', token)
-        db.session.add(role)
-        db.session.commit()
         res = c.delete('/api/v1/roles/1')
         assert res.status_code == 200
         data = res.get_json()

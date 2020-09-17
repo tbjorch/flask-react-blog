@@ -4,17 +4,14 @@ import json
 # internal modules
 from tests import CustomTestClient
 from app.models import User, Role
-from app.controllers import AuthController
-from app import db
+from app.controllers.AuthController import AuthController
 
 auth = AuthController.get_instance()
 
 
 def test_post_user_already_exists() -> None:
-    user: User = User("hauck", "asd123")
     with CustomTestClient() as c:
-        db.session.add(user)
-        db.session.commit()
+        User("hauck", "asd123").save()
         user = {"username": "hauck", "password": "qwe123"}
         res = c.post(
             '/api/v1/users',
@@ -27,7 +24,7 @@ def test_post_user_already_exists() -> None:
 
 def test_post_user_correct() -> None:
     with CustomTestClient() as c:
-        user = {"username": "hauck", "password": "qwe123"}
+        user = dict(username="hauck", password="qwe123")
         res = c.post(
             '/api/v1/users',
             data=json.dumps(user),
@@ -38,10 +35,8 @@ def test_post_user_correct() -> None:
 
 
 def test_get_user_by_id_correct() -> None:
-    user: User = User("hauck", "asd123")
     with CustomTestClient() as c:
-        db.session.add(user)
-        db.session.commit()
+        User("hauck", "asd123").save()
         res = c.get('/api/v1/users/1')
         assert res.status_code == 200
         data = res.get_json()
@@ -66,12 +61,10 @@ def test_get_user_by_id_nonexisting_user_and_bad_id() -> None:
 
 
 def test_delete_user_correct() -> None:
-    user: User = User("hauck", "asd123")
     with CustomTestClient() as c:
+        User("hauck", "asd123").save()
         token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
         c.set_cookie('localhost:5000', 'Authorization', token)
-        db.session.add(user)
-        db.session.commit()
         res = c.delete('/api/v1/users/1')
         assert res.status_code == 200
         data = res.get_json()
@@ -99,20 +92,14 @@ def test_delete_user_non_existing_and_bad_id() -> None:
 
 
 def test_post_user_role_correct() -> None:
-    user1 = User("jane", "asd123")
-    user2 = User("JOHN", "asd123")
-    user3 = User("Leia", "asd123")
-    role_1 = Role("ADMIN", "Administrator for site")
-    role_2 = Role("FINANCE", "financer for site")
     with CustomTestClient() as c:
+        User("jane", "asd123").save()
+        User("JOHN", "asd123").save()
+        User("Leia", "asd123").save()
+        Role("ADMIN", "Administrator for site").save()
+        Role("FINANCE", "financer for site").save()
         token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
         c.set_cookie('localhost:5000', 'Authorization', token)
-        db.session.add(user1)
-        db.session.add(user2)
-        db.session.add(user3)
-        db.session.add(role_1)
-        db.session.add(role_2)
-        db.session.commit()
         res = c.post(
             '/api/v1/users/1/roles',
             data=json.dumps({'role': 'ADMIN'}),
@@ -150,12 +137,10 @@ def test_post_user_role_correct() -> None:
 
 
 def test_post_user_role_nonexisting_role() -> None:
-    user1 = User("jane", "asd123")
     with CustomTestClient() as c:
+        User("jane", "asd123").save()
         token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
         c.set_cookie('localhost:5000', 'Authorization', token)
-        db.session.add(user1)
-        db.session.commit()
         res = c.post(
             '/api/v1/users/1/roles',
             data=json.dumps({'role': 'URHMA'}),
@@ -167,12 +152,10 @@ def test_post_user_role_nonexisting_role() -> None:
 
 
 def test_post_user_role_nonexisting_user() -> None:
-    role = Role("ADMIN", "Administrator for site")
     with CustomTestClient() as c:
+        Role("ADMIN", "Administrator for site").save()
         token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
         c.set_cookie('localhost:5000', 'Authorization', token)
-        db.session.add(role)
-        db.session.commit()
         res = c.post(
             '/api/v1/users/1/roles',
             data=json.dumps({'role': 'ADMIN'}),
@@ -211,12 +194,10 @@ def test_delete_user_role_not_authorized_role() -> None:
 
 
 def test_delete_user_role_nonexisting_user() -> None:
-    role_1 = Role("USER", "User on site")
     with CustomTestClient() as c:
+        Role("USER", "User on site").save()
         token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
         c.set_cookie('localhost:5000', 'Authorization', token)
-        db.session.add(role_1)
-        db.session.commit()
         res = c.delete(
             '/api/v1/users/1/roles',
             data=json.dumps({'role': 'USER'}),
@@ -228,12 +209,10 @@ def test_delete_user_role_nonexisting_user() -> None:
 
 
 def test_delete_user_role_nonexisting_role() -> None:
-    user1 = User("jane", "asd123")
     with CustomTestClient() as c:
+        User("jane", "asd123").save()
         token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
         c.set_cookie('localhost:5000', 'Authorization', token)
-        db.session.add(user1)
-        db.session.commit()
         res = c.delete(
             '/api/v1/users/1/roles',
             data=json.dumps({'role': 'ADMIN'}),
@@ -245,15 +224,14 @@ def test_delete_user_role_nonexisting_role() -> None:
 
 
 def test_delete_user_role_correct() -> None:
-    role_1 = Role("ADMIN", "Administrator for site")
-    user1 = User("jane", "asd123")
-    user1.roles.append(role_1)
     with CustomTestClient() as c:
+        role = Role("ADMIN", "Administrator for site")
+        role.save()
+        user = User("jane", "asd123")
+        user.roles.append(role)
+        user.save()
         token = auth.create_jwt_token("JohnDoe", 1, ["ADMIN"])
         c.set_cookie('localhost:5000', 'Authorization', token)
-        db.session.add(role_1)
-        db.session.add(user1)
-        db.session.commit()
         res = c.delete(
             '/api/v1/users/1/roles',
             data=json.dumps({'role': 'ADMIN'}),
