@@ -4,9 +4,11 @@ import Button from '../UI/Button/Button';
 import Input from '../UI/Input/Input';
 import classes from './Users.module.css';
 import axios from 'axios';
+import Select from '../UI/Select/Select';
 
 const AddUserForm = (props) => {
     const [user, setUser] = useState({'username':"", 'password':""});
+    const [role, setRole] = useState("");
 
     const usernameChangeHandler = (event) => {
         const newUser = {...user};
@@ -18,6 +20,10 @@ const AddUserForm = (props) => {
         const newUser = {...user};
         newUser.password = event.target.value;
         setUser(newUser);
+    }
+
+    const roleChangeHandler = (event) => {
+        setRole(event.target.value);
     }
 
     const addUser = (user) => {
@@ -40,12 +46,15 @@ const AddUserForm = (props) => {
         })
     };
 
+    const roles = [{value: "admin"}, {value: "user"}];
+
     const content = (
         <div>
             <form>
                 <h1>Add User</h1>
                 <Input label="Username" placeholder="Username" type="text" value={user.username} onChange={usernameChangeHandler}/>
                 <Input label="Password" placeholder="Password" type="password" value={user.password} onChange={passwordChangeHandler}/>
+                <Select label="Role" options={roles} value={role} onChange={roleChangeHandler}/>
             </form>
             <Button title={"ADD USER"} onClick={() => addUser(user)}/>
         </div>

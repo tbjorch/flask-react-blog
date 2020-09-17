@@ -10,7 +10,7 @@ const Blogposts = (props) => {
             title={blogpost.headline}
             body={blogpost.body}
             created={blogpost.created_at}
-            author={blogpost.author_id}
+            author={blogpost.user.username}
             deletePost={() => props.delete(blogpost.id)}
             />
     });
