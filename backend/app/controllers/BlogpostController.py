@@ -24,14 +24,19 @@ class BlogpostController(BaseController):
         blogposts: List[Blogpost] = Blogpost.find_all()
         if blogposts == []:
             raise NotFound("No blogposts exist")
-        json_list: List = [blogpost.to_dict() for blogpost in blogposts]
+        json_list: List[Dict] = [dict(
+                blogpost.to_dict(),
+                user=blogpost.user.to_dict()
+                ) for blogpost in blogposts]
         return self.make_json_response(json_list)
 
     def find_by_id(self, id) -> Response:
         blogpost: Blogpost = Blogpost.find_by_id(id)
         if blogpost is None:
             raise NotFound(f"No blogpost found with id={id}")
-        return self.make_json_response([blogpost.to_dict()])
+        resp_dict = blogpost.to_dict()
+        resp_dict.update(user=blogpost.user.to_dict())
+        return self.make_json_response([resp_dict])
 
     def delete_blogpost(self, id) -> Response:
         post: Blogpost = Blogpost.find_by_id(id)

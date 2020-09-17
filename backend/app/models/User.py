@@ -27,7 +27,7 @@ class User(BaseModel, db.Model):
     roles = db.relationship('Role', secondary=user_role, lazy=True)
     blogposts = db.relationship(
         'Blogpost',
-        backref=db.backref('User', lazy=True)
+        backref=db.backref('user', lazy=True)
         )
 
     def __init__(self, username, password_hash) -> None:

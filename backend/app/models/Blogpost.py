@@ -14,7 +14,7 @@ class Blogpost(BaseModel, db.Model):
         db.ForeignKey('user.id'),
         nullable=False)
 
-    def __init__(self, headline, body, user_id) -> None:
+    def __init__(self, headline: str, body: str, user_id: int) -> None:
         if not isinstance(headline, str) and isinstance(body, str):
             raise BadRequest("Expected parameters to be strings")
         self.headline = headline
