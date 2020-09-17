@@ -3,7 +3,8 @@ from flask import Response
 
 # Internal modules
 from app import app
-from app.controllers import UserController, AuthController
+from app.controllers.UserController import UserController
+from app.controllers.AuthController import AuthController
 
 controller: UserController = UserController()
 auth = AuthController.get_instance()

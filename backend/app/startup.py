@@ -3,7 +3,7 @@ from typing import List
 
 # Internal modules
 from app.models import Role, User, Blogpost
-from app.controllers import AuthController
+from app.controllers.AuthController import AuthController
 
 
 auth = AuthController.get_instance()

@@ -6,7 +6,8 @@ from flask import Response
 from werkzeug.exceptions import BadRequest, NotFound, Unauthorized
 
 # Internal modules
-from app.controllers import BaseController, AuthController
+from app.controllers.BaseController import BaseController
+from app.controllers.AuthController import AuthController
 from app.models import User, Role
 
 auth = AuthController.get_instance()

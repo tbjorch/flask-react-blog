@@ -3,7 +3,8 @@ from flask import Response, request
 
 # Internal modules
 from app import app
-from app.controllers import BlogpostController, AuthController
+from app.controllers.AuthController import AuthController
+from app.controllers.BlogpostController import BlogpostController
 
 
 controller: BlogpostController = BlogpostController()
