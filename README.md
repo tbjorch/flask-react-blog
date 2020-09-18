@@ -19,4 +19,4 @@ The application is deployed using **Docker** containers, a **Nginx** container w
 - JavaScript
 - ReactJS
 - Nginx
-- Github Actions running tests on push
+- Github Actions
